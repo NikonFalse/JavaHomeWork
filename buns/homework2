@@ -1,1 +1,62 @@
+public class Book {
+    private String title;
 
+    public Book(String title) {
+        this.title = title;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+}
+
+public class UniLibrary {
+    public void getBook(Book book) {
+        System.out.println("Getting book: " + book.getTitle());
+    }
+
+    public void returnBook(Book book) {
+        System.out.println("Returning book: " + book.getTitle());
+    }
+
+    public void borrowBook(Book book) {
+        System.out.println("Borrowing book: " + book.getTitle());
+    }
+}
+
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+
+@Aspect
+public class LoggingAspect {
+
+    @Before("execution(* UniLibrary.*(..)) && args(book)")
+    public void logBefore(JoinPoint joinPoint, Book book) {
+        String methodName = joinPoint.getSignature().getName();
+        System.out.println("Before method: " + methodName + ", Book: " + book.getTitle());
+    }
+}
+
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+
+@Aspect
+public class LoggingAroundAspect {
+
+    @Around("execution(* UniLibrary.*(..))")
+    public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {
+        String methodName = joinPoint.getSignature().getName();
+
+        try {
+            System.out.println("Before method: " + methodName);
+            Object result = joinPoint.proceed();
+            System.out.println("After method: " + methodName + " (Success)");
+            return result;
+        } catch (Exception e) {
+            System.out.println("After method: " + methodName + " (Exception: " + e.getMessage() + ")");
+            throw e;
+        }
+    }
+}
